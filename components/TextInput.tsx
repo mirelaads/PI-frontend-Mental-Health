@@ -9,7 +9,7 @@ const TextInputLogin = () => {
     const [password, setPassword] = useState('');
 
     return (
-        <SafeAreaView style={styles.safeArea}>
+        <SafeAreaView>
             <View style={styles.container}>
 
                 <View style={styles.inputContainer}>
@@ -28,7 +28,7 @@ const TextInputLogin = () => {
                     />
                 </View>
 
-                <View style={styles.spaceBetweenInputs} />
+                <View />
 
                 <View style={styles.inputContainer}>
                     <Image
@@ -45,25 +45,12 @@ const TextInputLogin = () => {
                     />
                 </View>
 
-                <View style={styles.recuperationContainer}>
-                    <TouchableOpacity>
-                        <Text style={styles.recuperation}>Esqueceu a senha?</Text>
-                    </TouchableOpacity>
-                </View>
-
             </View>
         </SafeAreaView>
     );
 };
 
 const styles = StyleSheet.create({
-    safeArea: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        width: '100%',
-        marginTop: -50
-    },
     container: {
         width: '100%',
         maxWidth: 400,
@@ -72,38 +59,26 @@ const styles = StyleSheet.create({
     },
     inputContainer: {
         flexDirection: 'row',
-        alignItems: 'flex-end',
+        alignItems: 'center',
         width: '100%',
-        marginVertical: 10,
+        marginVertical: 8,
         borderBottomWidth: 1,
         borderBottomColor: '#000',
+        paddingBottom: 5,
     },
     input: {
         flex: 1,
-        height: 40,
+        height: 45,
         fontSize: 16,
         color: '#333',
         paddingLeft: 5,
-        paddingBottom: 2,
+        paddingBottom: 3,
         fontFamily: 'PoppinsRegular',
     },
     icon: {
         width: 24,
         height: 24,
         marginRight: 10,
-    },
-    spaceBetweenInputs: {
-        height: 15,
-    },
-    recuperationContainer: {
-        width: '100%',
-        flexDirection: 'row',
-        justifyContent: 'flex-end',
-        marginTop: height * 0.02,
-    },
-    recuperation: {
-        fontSize: width * 0.04,
-        fontFamily: 'PoppinsRegular',
     },
 });
 

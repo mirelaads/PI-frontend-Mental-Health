@@ -12,9 +12,8 @@ const HomeScreen = () => {
     const onPressLogin = () => {
         router.push('/home');
     };
-
-    const onPressCadastro = () => {
-        router.push('/cadastro');
+    const onPressRegister = () => {
+        router.push('/recuperation');
     };
 
     return (
@@ -29,6 +28,12 @@ const HomeScreen = () => {
             <Text style={styles.subtitle}>Entrar</Text>
             <TextInputLogin />
 
+            <View style={styles.recuperationContainer}>
+                <TouchableOpacity onPress={onPressRegister}>
+                    <Text style={styles.recuperation}>Esqueceu a senha?</Text>
+                </TouchableOpacity>
+            </View>
+
             <TouchableOpacity
                 style={styles.btnLogin}
                 onPress={onPressLogin}
@@ -36,7 +41,7 @@ const HomeScreen = () => {
                 <Text style={styles.textLogin}>Login</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={onPressCadastro}>
+            <TouchableOpacity>
                 <Text style={styles.textCadastro}>
                     Ainda não possui conta? <Text style={styles.link}>Cadastre-se</Text>
                 </Text>
@@ -69,7 +74,7 @@ const styles = StyleSheet.create({
         fontSize: width * 0.06,
         fontWeight: 'bold',
         fontFamily: 'PoppinsRegular',
-        marginBottom: height * 0.02,
+        marginBottom: height * 0.015,
     },
     btnLogin: {
         backgroundColor: '#007bff',
@@ -83,7 +88,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.2,
         shadowRadius: 10,
         elevation: 5,
-        marginTop: height * 0.02,
+        marginTop: height * 0.015, // Diminuído o espaço entre TextInput e botão
     },
     textLogin: {
         color: '#FFFFFF',
@@ -94,12 +99,22 @@ const styles = StyleSheet.create({
     textCadastro: {
         fontSize: Math.min(width * 0.045, 16),
         color: '#333',
-        marginTop: height * 0.015,
+        marginTop: height * 0.012, // Pequena redução no espaçamento
         textAlign: 'center',
     },
     link: {
         textDecorationLine: 'underline'
     },
+    recuperationContainer: {
+        width: '100%',
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        marginTop: height * 0.01, // Reduzido o espaço entre TextInput e "Esqueceu a senha?"
+    },
+    recuperation: {
+        fontSize: width * 0.04,
+        fontFamily: 'PoppinsRegular',
+    }
 });
 
 export default HomeScreen;
