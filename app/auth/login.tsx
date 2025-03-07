@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, Image, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, Image, StyleSheet, Dimensions, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ThemedText } from '@/components/ThemedText';
 import TextInputLogin from '@/components/TextInput';
@@ -8,16 +8,25 @@ const { width, height } = Dimensions.get('window');
 
 const HomeScreen = () => {
     const router = useRouter();
+    const [loading, setLoading] = useState(false); // Estado de carregamento
+
+    useEffect(() => {
+        setLoading(false); // Reseta o estado ao entrar na tela
+    }, []);
 
     const onPressLogin = () => {
-        router.push('/home');
+        setLoading(true); // Ativa o carregamento antes de redirecionar
+        setTimeout(() => {
+            router.push('../(tabs)/home');  // Redireciona para a página de home
+        }, 1000); // 1 segundo de delay antes de redirecionar
     };
+
     const onPressRecuperation = () => {
-        router.push('/recuperation');
+        router.push('../auth/recuperation');
     };
 
     const onPressRegister = () => {
-        router.push('/register');
+        router.push('../auth/register');
     };
 
     return (
@@ -38,12 +47,17 @@ const HomeScreen = () => {
                 </TouchableOpacity>
             </View>
 
-            <TouchableOpacity
-                style={styles.btnLogin}
-                onPress={onPressLogin}
-            >
-                <Text style={styles.textLogin}>Login</Text>
-            </TouchableOpacity>
+            {/* Mostrar botão de login ou spinner de carregamento */}
+            {loading ? (
+                <ActivityIndicator size="large" color="#007bff" />
+            ) : (
+                <TouchableOpacity
+                    style={styles.btnLogin}
+                    onPress={onPressLogin}
+                >
+                    <Text style={styles.textLogin}>Login</Text>
+                </TouchableOpacity>
+            )}
 
             <TouchableOpacity onPress={onPressRegister}>
                 <Text style={styles.textCadastro}>
@@ -92,7 +106,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.2,
         shadowRadius: 10,
         elevation: 5,
-        marginTop: height * 0.015, // Diminuído o espaço entre TextInput e botão
+        marginTop: height * 0.015,
     },
     textLogin: {
         color: '#FFFFFF',
@@ -103,7 +117,7 @@ const styles = StyleSheet.create({
     textCadastro: {
         fontSize: Math.min(width * 0.045, 16),
         color: '#333',
-        marginTop: height * 0.012, // Pequena redução no espaçamento
+        marginTop: height * 0.012,
         textAlign: 'center',
     },
     link: {
@@ -113,7 +127,7 @@ const styles = StyleSheet.create({
         width: '100%',
         flexDirection: 'row',
         justifyContent: 'flex-end',
-        marginTop: height * 0.01, // Reduzido o espaço entre TextInput e "Esqueceu a senha?"
+        marginTop: height * 0.01,
     },
     recuperation: {
         fontSize: width * 0.04,
