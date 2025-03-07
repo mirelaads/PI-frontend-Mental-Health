@@ -23,40 +23,51 @@ const HomeScreen = () => {
         };
 
         requestPermission();
-
-        const fetchUserData = async () => {
-            try {
-                const storedEmail = await AsyncStorage.getItem('userEmail');
-                if (!storedEmail) {
-                    Alert.alert('Aviso', 'Você precisa estar logado para acessar essa página.');
-                    return;
-                }
-
-                const token = await AsyncStorage.getItem('accessToken');
-                const response = await fetch(`http://localhost:3000/users/email/${storedEmail}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`,
-                    },
-                });
-
-                const data = await response.json();
-                if (!response.ok) {
-                    Alert.alert('Erro', data.message || 'Erro ao carregar os dados do usuário');
-                } else {
-                    setUser(data);
-                    setUserId(data.id);
-                }
-            } catch (error) {
-                Alert.alert('Erro', 'Ocorreu um erro ao tentar carregar os dados do usuário.');
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchUserData();
     }, []);
+
+    const fetchUserData = async () => {
+        try {
+            const storedEmail = await AsyncStorage.getItem('userEmail');
+
+            if (!storedEmail) {
+                Alert.alert('Aviso', 'Você precisa estar logado para acessar essa página.');
+                setLoading(false);
+                return;
+            }
+
+            const token = await AsyncStorage.getItem('accessToken');
+
+            if (!token) {
+                Alert.alert('Erro', 'Token não fornecido. Faça login novamente.');
+                setLoading(false);
+                return;
+            }
+
+            const response = await fetch(`http://localhost:3000/users/email/${storedEmail}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+
+            const data = await response.json();
+
+            await AsyncStorage.setItem('userName', data.nome);
+
+            if (!response.ok) {
+                Alert.alert('Erro', data.message || 'Erro ao carregar os dados do usuário');
+            } else {
+                setUser(data);
+                setUserId(data.id);
+            }
+        } catch (error) {
+            Alert.alert('Erro', 'Ocorreu um erro ao tentar carregar os dados do usuário.');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleImagePick = async () => {
         console.log('Abrindo a galeria...');
@@ -70,7 +81,7 @@ const HomeScreen = () => {
 
         try {
             const result = await ImagePicker.launchImageLibraryAsync({
-                mediaTypes: ImagePicker.MediaType,  // Usando um array de 'MediaType' para especificar o tipo de mídia
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
                 allowsEditing: true,
                 quality: 1,
             });
@@ -78,7 +89,7 @@ const HomeScreen = () => {
             console.log('Resultado da seleção da imagem:', result);
 
             if (!result.canceled) {
-                setSelectedImage(result.assets[0].uri); // Armazena o URI da imagem selecionada
+                setSelectedImage(result.assets[0].uri);
                 console.log('Imagem selecionada:', result.assets[0].uri);
             }
         } catch (error) {
@@ -86,8 +97,6 @@ const HomeScreen = () => {
             Alert.alert('Erro', 'Ocorreu um erro ao tentar abrir a galeria.');
         }
     };
-
-
 
     const handleImageUpload = async () => {
         if (!selectedImage || !userId) {
@@ -123,33 +132,6 @@ const HomeScreen = () => {
             }
         } catch (error) {
             Alert.alert('Erro', 'Ocorreu um erro ao tentar fazer o upload da imagem.');
-        }
-    };
-
-    const fetchUserData = async () => {
-        try {
-            const storedEmail = await AsyncStorage.getItem('userEmail');
-            const token = await AsyncStorage.getItem('accessToken');
-            const response = await fetch(`http:localhost:3000/users/email/${storedEmail}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
-            });
-
-            const data = await response.json();
-            if (!response.ok) {
-                Alert.alert('Erro', 'Erro ao carregar os dados do usuário');
-                return null;
-            } else {
-                setUser(data);
-                setUserId(data.id);
-                return data;
-            }
-        } catch (error) {
-            Alert.alert('Erro', 'Ocorreu um erro ao tentar carregar os dados do usuário.');
-            return null;
         }
     };
 
@@ -266,17 +248,17 @@ const styles = StyleSheet.create({
     },
     btnAgendar: {
         backgroundColor: '#007bff',
-        paddingVertical: height * 0.015,
-        paddingHorizontal: width * 0.2,
+        paddingVertical: height * 0.02,
+        paddingHorizontal: width * 0.1,
         borderRadius: 10,
-        marginTop: height * 0.02,
+        marginBottom: height * 0.03,
     },
     btnUpload: {
-        backgroundColor: '#007bff',
-        paddingVertical: height * 0.015,
-        paddingHorizontal: width * 0.2,
+        backgroundColor: '#2994E2',
+        paddingVertical: height * 0.02,
+        paddingHorizontal: width * 0.1,
         borderRadius: 10,
-        marginTop: height * 0.02,
+        marginBottom: height * 0.03,
     },
     btnText: {
         fontSize: width * 0.04,
@@ -286,7 +268,9 @@ const styles = StyleSheet.create({
     btnAlterarImagem: {
         fontSize: width * 0.04,
         marginTop: height * 0.02,
-        marginBottom: height * 0.03
+        marginBottom: height * 0.03,
+        textAlign: 'center',
+        color: '#007bff',
     },
 });
 
