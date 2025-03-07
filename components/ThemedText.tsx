@@ -37,6 +37,7 @@ const styles = StyleSheet.create({
   default: {
     fontSize: 16,
     lineHeight: 24,
+    backgroundColor: '#E4E7EB'
   },
   defaultSemiBold: {
     fontSize: 16,
@@ -44,17 +45,28 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   title: {
-    fontSize: 32,
+    fontSize: 25,
     fontWeight: 'bold',
     lineHeight: 32,
+    color: '#2994E2',
+    fontFamily: 'PoppinsBold',
   },
   subtitle: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
+    fontFamily: 'PoppinsRegular',
+    color: '#000000',
+    backgroundColor: '#E4E7EB',
+  },
+  textNormal: {
+    fontSize: 12,
+    fontWeight: 'regular',
+    fontFamily: 'PoppinsBold',
+    color: '#000000',
   },
   link: {
     lineHeight: 30,
     fontSize: 16,
-    color: '#0a7ea4',
+    color: '#000000',
   },
 });
