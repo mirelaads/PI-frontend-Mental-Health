@@ -8,17 +8,17 @@ const { width, height } = Dimensions.get('window');
 
 const HomeScreen = () => {
     const router = useRouter();
-    const [loading, setLoading] = useState(false); // Estado de carregamento
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        setLoading(false); // Reseta o estado ao entrar na tela
+        setLoading(false);
     }, []);
 
     const onPressLogin = () => {
-        setLoading(true); // Ativa o carregamento antes de redirecionar
+        setLoading(true);
         setTimeout(() => {
-            router.push('../(tabs)/home');  // Redireciona para a página de home
-        }, 1000); // 1 segundo de delay antes de redirecionar
+            router.push('../(tabs)/home');
+        }, 1000);
     };
 
     const onPressRecuperation = () => {
@@ -46,18 +46,6 @@ const HomeScreen = () => {
                     <Text style={styles.recuperation}>Esqueceu a senha?</Text>
                 </TouchableOpacity>
             </View>
-
-            {/* Mostrar botão de login ou spinner de carregamento */}
-            {loading ? (
-                <ActivityIndicator size="large" color="#007bff" />
-            ) : (
-                <TouchableOpacity
-                    style={styles.btnLogin}
-                    onPress={onPressLogin}
-                >
-                    <Text style={styles.textLogin}>Login</Text>
-                </TouchableOpacity>
-            )}
 
             <TouchableOpacity onPress={onPressRegister}>
                 <Text style={styles.textCadastro}>

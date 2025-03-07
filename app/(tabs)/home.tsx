@@ -1,21 +1,181 @@
-import React from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Image } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Image, ActivityIndicator, Alert } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as ImagePicker from 'expo-image-picker';
 
 const { width, height } = Dimensions.get('window');
 
 const HomeScreen = () => {
+    const [user, setUser] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+    const [selectedImage, setSelectedImage] = useState<any>(null);
+    const [userId, setUserId] = useState<string | null>(null);
+
+    useEffect(() => {
+        const requestPermission = async () => {
+            const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            if (status !== 'granted') {
+                Alert.alert('Permissão negada', 'Você precisa permitir o acesso à galeria para selecionar uma imagem.');
+            } else {
+                console.log('Permissão concedida');
+            }
+        };
+
+        requestPermission();
+
+        const fetchUserData = async () => {
+            try {
+                const storedEmail = await AsyncStorage.getItem('userEmail');
+                if (!storedEmail) {
+                    Alert.alert('Aviso', 'Você precisa estar logado para acessar essa página.');
+                    return;
+                }
+
+                const token = await AsyncStorage.getItem('accessToken');
+                const response = await fetch(`http://localhost:3000/users/email/${storedEmail}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+
+                const data = await response.json();
+                if (!response.ok) {
+                    Alert.alert('Erro', data.message || 'Erro ao carregar os dados do usuário');
+                } else {
+                    setUser(data);
+                    setUserId(data.id);
+                }
+            } catch (error) {
+                Alert.alert('Erro', 'Ocorreu um erro ao tentar carregar os dados do usuário.');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchUserData();
+    }, []);
+
+    const handleImagePick = async () => {
+        console.log('Abrindo a galeria...');
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+        if (status !== 'granted') {
+            console.log('Permissão negada');
+            Alert.alert('Permissão necessária', 'Você precisa conceder acesso à galeria para selecionar uma imagem.');
+            return;
+        }
+
+        try {
+            const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaType,  // Usando um array de 'MediaType' para especificar o tipo de mídia
+                allowsEditing: true,
+                quality: 1,
+            });
+
+            console.log('Resultado da seleção da imagem:', result);
+
+            if (!result.canceled) {
+                setSelectedImage(result.assets[0].uri); // Armazena o URI da imagem selecionada
+                console.log('Imagem selecionada:', result.assets[0].uri);
+            }
+        } catch (error) {
+            console.log('Erro ao abrir a galeria:', error);
+            Alert.alert('Erro', 'Ocorreu um erro ao tentar abrir a galeria.');
+        }
+    };
+
+
+
+    const handleImageUpload = async () => {
+        if (!selectedImage || !userId) {
+            Alert.alert('Erro', 'Por favor, selecione uma imagem para enviar.');
+            return;
+        }
+
+        const fileExtension = selectedImage.split('.').pop();  // Captura a extensão do arquivo
+        const mimeType = `image/${fileExtension}`;
+
+        try {
+            const formData = new FormData();
+            formData.append('avatar', {
+                uri: selectedImage,
+                type: mimeType,  // Tipo correto de acordo com a extensão
+                name: `avatar_${userId}.${fileExtension}`,
+            });
+
+            const response = await fetch(`http://localhost:3000/users/${userId}/avatar`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${await AsyncStorage.getItem('accessToken')}`,
+                },
+                body: formData,
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                Alert.alert('Sucesso', 'Imagem alterada com sucesso!');
+                fetchUserData();  // Atualiza os dados do usuário após o upload da imagem
+            } else {
+                Alert.alert('Erro', data.message || 'Erro ao alterar a imagem.');
+            }
+        } catch (error) {
+            Alert.alert('Erro', 'Ocorreu um erro ao tentar fazer o upload da imagem.');
+        }
+    };
+
+    const fetchUserData = async () => {
+        try {
+            const storedEmail = await AsyncStorage.getItem('userEmail');
+            const token = await AsyncStorage.getItem('accessToken');
+            const response = await fetch(`http:localhost:3000/users/email/${storedEmail}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+
+            const data = await response.json();
+            if (!response.ok) {
+                Alert.alert('Erro', 'Erro ao carregar os dados do usuário');
+                return null;
+            } else {
+                setUser(data);
+                setUserId(data.id);
+                return data;
+            }
+        } catch (error) {
+            Alert.alert('Erro', 'Ocorreu um erro ao tentar carregar os dados do usuário.');
+            return null;
+        }
+    };
+
+    if (loading) {
+        return (
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#007bff" />
+                <Text style={{ color: '#007bff', marginTop: 10 }}>Carregando dados do usuário...</Text>
+            </View>
+        );
+    }
+
     return (
         <View style={styles.container}>
-
             <View style={styles.imageContainer}>
                 <Image
-                    source={require('../../assets/images/brain.png')}
+                    source={user?.avatar ? { uri: user.avatar } : require('../../assets/images/brain.png')}
                     style={styles.profileImage}
                 />
             </View>
 
-            <Text style={styles.title}>Olá, João</Text>
+            <TouchableOpacity onPress={handleImagePick}>
+                <Text style={styles.btnAlterarImagem}>Alterar Imagem</Text>
+            </TouchableOpacity>
+
+            <Text style={styles.title}>Olá, {user?.nome || 'Usuário'}</Text>
 
             <View style={styles.motivationalBox}>
                 <Text style={styles.motivationalText}>Você está mais perto de alcançar seus objetivos!</Text>
@@ -29,6 +189,12 @@ const HomeScreen = () => {
             <TouchableOpacity style={styles.btnAgendar}>
                 <Text style={styles.btnText}>Agendar Consulta</Text>
             </TouchableOpacity>
+
+            {selectedImage && (
+                <TouchableOpacity style={styles.btnUpload} onPress={handleImageUpload}>
+                    <Text style={styles.btnText}>Enviar Imagem</Text>
+                </TouchableOpacity>
+            )}
         </View>
     );
 };
@@ -41,12 +207,16 @@ const styles = StyleSheet.create({
         paddingHorizontal: width * 0.05,
         paddingTop: height * 0.1,
     },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
     imageContainer: {
         width: 120,
         height: 120,
         borderRadius: 60,
         overflow: 'hidden',
-        marginBottom: height * 0.05,
         borderWidth: 4,
         borderColor: '#000',
         justifyContent: 'center',
@@ -75,7 +245,6 @@ const styles = StyleSheet.create({
     motivationalText: {
         fontSize: width * 0.04,
         color: '#fff',
-        fontFamily: 'PoppinsBold'
     },
     consultationBox: {
         width: '100%',
@@ -83,38 +252,41 @@ const styles = StyleSheet.create({
         paddingVertical: height * 0.02,
         paddingHorizontal: width * 0.05,
         borderRadius: 10,
-        marginBottom: height * 0.05,
         flexDirection: 'row',
+        justifyContent: 'space-between',
         alignItems: 'center',
-        justifyContent: 'space-between'
+        marginBottom: height * 0.05,
     },
     consultationText: {
         fontSize: width * 0.04,
         color: '#fff',
-        fontFamily: 'PoppinsBold'
     },
     icon: {
-        marginLeft: width * 0.02,
+        marginLeft: width * 0.05,
     },
     btnAgendar: {
         backgroundColor: '#007bff',
-        width: Math.min(width * 0.8, 350),
-        height: Math.min(height * 0.07, 60),
-        borderRadius: 30,
-        justifyContent: 'center',
-        alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 5 },
-        shadowOpacity: 0.2,
-        shadowRadius: 10,
-        elevation: 5,
-        marginTop: height * 0.05,
+        paddingVertical: height * 0.015,
+        paddingHorizontal: width * 0.2,
+        borderRadius: 10,
+        marginTop: height * 0.02,
+    },
+    btnUpload: {
+        backgroundColor: '#007bff',
+        paddingVertical: height * 0.015,
+        paddingHorizontal: width * 0.2,
+        borderRadius: 10,
+        marginTop: height * 0.02,
     },
     btnText: {
-        color: '#FFFFFF',
-        fontSize: Math.min(width * 0.05, 22),
-        fontWeight: 'bold',
+        fontSize: width * 0.04,
+        color: '#fff',
         textAlign: 'center',
+    },
+    btnAlterarImagem: {
+        fontSize: width * 0.04,
+        marginTop: height * 0.02,
+        marginBottom: height * 0.03
     },
 });
 
