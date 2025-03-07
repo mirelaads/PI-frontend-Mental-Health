@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, TextInput, View, Text, TouchableOpacity, Dimensions, Alert } from 'react-native';
-import { Ionicons } from '@expo/vector-icons'; // Ícone de seta de voltar
-import { useNavigation } from '@react-navigation/native'; // Hook de navegação
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 
 const { width, height } = Dimensions.get('window');
 
@@ -12,34 +12,77 @@ const CadastroScreen: React.FC = () => {
     const [telefone, setTelefone] = useState('');
     const [endereco, setEndereco] = useState('');
     const [senha, setSenha] = useState('');
+    const [avatar, setAvatar] = useState<string | null>(null);
 
-    const navigation = useNavigation(); // Usando o hook de navegação
+    const router = useRouter();
 
-    const handleCadastro = () => {
-        // Validações simples
+    const handleCadastro = async () => {
+        console.log('Enviando dados para a API:', {
+            nome, sobrenome, email, telefone, endereco, senha, avatar
+        });
+
         if (!nome || !sobrenome || !email || !telefone || !endereco || !senha) {
+            console.log('Campos obrigatórios não preenchidos');
             Alert.alert('Erro', 'Por favor, preencha todos os campos');
             return;
         }
 
         const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
         if (!emailRegex.test(email)) {
+            console.log('Email inválido:', email);
             Alert.alert('Erro', 'Email inválido');
             return;
         }
 
         const telefoneRegex = /^[0-9]{10,11}$/;
         if (!telefoneRegex.test(telefone)) {
+            console.log('Telefone inválido:', telefone);
             Alert.alert('Erro', 'Telefone inválido');
             return;
         }
 
-        Alert.alert('Sucesso', 'Cadastro realizado com sucesso!');
+        try {
+            const response = await fetch('http://localhost:3000/auth/signup', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Charset': 'utf-8'
+                },
+                body: JSON.stringify({
+                    nome,
+                    sobrenome,
+                    email,
+                    telefone,
+                    endereco,
+                    senha,
+                    avatar: avatar || null,
+                })
+            });
+
+            const data = await response.json();
+            console.log('Resposta da API:', data);
+
+            if (response.ok) {
+                Alert.alert('Sucesso', data.message || 'Cadastro realizado com sucesso!');
+            } else {
+                if (data.error) {
+                    console.error('Erro detalhado da API:', data.error);
+                } else {
+                    console.log('Erro', data.message || 'Erro ao cadastrar');
+                }
+            }
+        } catch (error) {
+            console.error('Erro na requisição:', error);
+            Alert.alert('Erro', 'Erro ao conectar com o servidor');
+        } finally {
+            const generatedToken = 'generatedTokenHere';
+            router.push(`/auth/CodeVerificationRegister?email=${email}&token=${generatedToken}`);
+        }
     };
 
     return (
         <View style={styles.container}>
-            <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+            <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
                 <Ionicons name="arrow-back" size={30} color="#007bff" />
             </TouchableOpacity>
 

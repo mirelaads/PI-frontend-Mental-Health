@@ -1,73 +1,65 @@
 import React, { useState, useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';  // Para o ícone de check
+import { MaterialIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 
 const PasswordRecovery = () => {
-    const [step, setStep] = useState(1); // Passo 1: Email | Passo 2: Código
+    const router = useRouter();
+    const [step, setStep] = useState(1);
     const [email, setEmail] = useState('');
-    const [code, setCode] = useState(Array(6).fill(''));
     const [message, setMessage] = useState(
         'Informe abaixo o seu e-mail de login e em seguida acesse o e-mail para prosseguir com o passo a passo de recuperação de acesso.'
     );
-    const [isCodeVerified, setIsCodeVerified] = useState(false);  // Novo estado
-
-    // Criamos referências para os campos do código
+    const [isCodeVerified, setIsCodeVerified] = useState(false);
+    const [code, setCode] = useState(Array(6).fill(''));
     const codeInputsRef = useRef([]);
 
-    // Função para enviar o e-mail
     const handleSendLink = () => {
         if (email.trim() === '') {
             setMessage('Por favor, insira um e-mail válido.');
         } else {
             setMessage('Enviamos um código de verificação para o seu e-mail.');
-            setStep(2);  // Alterar para a etapa 2
+            setStep(2);
         }
     };
 
-    // Atualizar código de recuperação e mover o foco automaticamente
     const handleCodeChange = (value, index) => {
         const newCode = [...code];
         newCode[index] = value;
         setCode(newCode);
 
-        // Mover o foco para o próximo input, se houver
         if (value && index < 5) {
             codeInputsRef.current[index + 1].focus();
         }
     };
 
-    // Função para verificar o código
     const handleVerifyCode = () => {
-        // Simula a verificação do código (pode adicionar lógica real aqui)
         setIsCodeVerified(true);
     };
 
-    // Função para voltar para o estado anterior (etapa anterior)
     const handleGoBack = () => {
-        setStep(1);  // Retorna para o passo 1
-        setEmail(''); // Limpa o campo de e-mail
-        setCode(Array(6).fill('')); // Limpa o código
-        setIsCodeVerified(false); // Reseta a verificação do código
+        setStep(1);
+        setEmail('');
+        setCode(Array(6).fill(''));
+        setIsCodeVerified(false);
         setMessage('Informe abaixo o seu e-mail de login e em seguida acesse o e-mail para prosseguir com o passo a passo de recuperação de acesso.');
     };
 
     return (
         <View style={styles.container}>
-            {/* Cabeçalho com a seta azul */}
+
             <View style={styles.header}>
                 <TouchableOpacity onPress={handleGoBack}>
                     <MaterialIcons name="arrow-back" size={35} color="#007bff" />
                 </TouchableOpacity>
             </View>
 
-            {/* Caixa Amarela com Mensagem, somente exibe se não for verificado */}
             {!isCodeVerified && (
                 <View style={styles.yellowRectangle}>
                     <Text style={styles.text}>{message}</Text>
                 </View>
             )}
 
-            {/* Etapa 1: Input de E-mail */}
             {step === 1 && (
                 <>
                     <TextInput
@@ -85,7 +77,6 @@ const PasswordRecovery = () => {
                 </>
             )}
 
-            {/* Etapa 2: Digitação do Código de Verificação */}
             {step === 2 && !isCodeVerified && (
                 <>
                     <View style={styles.codeContainer}>
@@ -102,21 +93,18 @@ const PasswordRecovery = () => {
                         ))}
                     </View>
 
-                    {/* Link para reenviar código com estilo flex-end */}
                     <View style={styles.resendLinkContainer}>
                         <TouchableOpacity>
                             <Text style={styles.resendLink}>Reenviar código</Text>
                         </TouchableOpacity>
                     </View>
 
-                    {/* Botão para enviar código */}
                     <TouchableOpacity style={styles.buttonCentered} onPress={handleVerifyCode}>
                         <Text style={styles.buttonText}>Enviar</Text>
                     </TouchableOpacity>
                 </>
             )}
 
-            {/* Label de código verificado com sucesso */}
             {isCodeVerified && (
                 <View style={styles.successLabel}>
                     <Text style={styles.successText}>Código verificado com sucesso</Text>
@@ -135,10 +123,10 @@ const styles = StyleSheet.create({
     header: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginTop: -150,  // Maior espaço no topo
+        marginTop: -150,
         marginBottom: 40,
         width: '100%',
-        justifyContent: 'flex-start', // Alinha a seta à esquerda
+        justifyContent: 'flex-start',
     },
     yellowRectangle: {
         backgroundColor: '#FCF172',
@@ -174,40 +162,6 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 'bold',
     },
-    codeContainer: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        gap: 10,
-        marginBottom: 15,
-    },
-    codeInput: {
-        width: 40,
-        height: 50,
-        borderWidth: 1,
-        borderColor: '#007bff',
-        textAlign: 'center',
-        fontSize: 18,
-        backgroundColor: '#fff',
-        marginRight: 12
-    },
-    resendLinkContainer: {
-        width: '100%',
-        flexDirection: 'row',
-        justifyContent: 'flex-end', // Flex-end para alinhar o botão à direita
-        marginBottom: 50,
-        marginLeft: -35
-    },
-    resendLink: {
-        fontSize: 16,
-        fontFamily: 'PoppinsRegular',
-    },
-    buttonCentered: {
-        backgroundColor: '#007bff',
-        paddingVertical: 12,
-        paddingHorizontal: 50,
-        borderRadius: 20,
-        alignSelf: 'center',
-    },
     successLabel: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -224,7 +178,35 @@ const styles = StyleSheet.create({
         marginLeft: 10,
         fontSize: 16,
         fontFamily: 'PoppinsBold',
-        textAlign: 'center'
+        textAlign: 'center',
+    },
+    codeContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 20,
+    },
+    codeInput: {
+        width: 40,
+        height: 40,
+        borderBottomWidth: 2,
+        borderBottomColor: '#007bff',
+        fontSize: 18,
+        textAlign: 'center',
+    },
+    resendLinkContainer: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+    },
+    resendLink: {
+        color: '#007bff',
+        fontSize: 14,
+    },
+    buttonCentered: {
+        backgroundColor: '#007bff',
+        paddingVertical: 12,
+        paddingHorizontal: 20,
+        borderRadius: 20,
+        marginTop: 20,
     },
 });
 
