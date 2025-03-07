@@ -12,8 +12,12 @@ const HomeScreen = () => {
     const onPressLogin = () => {
         router.push('/home');
     };
-    const onPressRegister = () => {
+    const onPressRecuperation = () => {
         router.push('/recuperation');
+    };
+
+    const onPressRegister = () => {
+        router.push('/register');
     };
 
     return (
@@ -29,7 +33,7 @@ const HomeScreen = () => {
             <TextInputLogin />
 
             <View style={styles.recuperationContainer}>
-                <TouchableOpacity onPress={onPressRegister}>
+                <TouchableOpacity onPress={onPressRecuperation}>
                     <Text style={styles.recuperation}>Esqueceu a senha?</Text>
                 </TouchableOpacity>
             </View>
@@ -41,7 +45,7 @@ const HomeScreen = () => {
                 <Text style={styles.textLogin}>Login</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity>
+            <TouchableOpacity onPress={onPressRegister}>
                 <Text style={styles.textCadastro}>
                     Ainda não possui conta? <Text style={styles.link}>Cadastre-se</Text>
                 </Text>
